@@ -10,7 +10,7 @@ renderer.render()
 
 # gui = ti.GUI("Sphere", res=(renderer.camera.resolution[1], renderer.camera.resolution[0]))
 # gui.set_image(renderer.canvas_to_gui)
-#
+
 # while gui.running:
 #     gui.set_image(renderer.canvas_to_gui)
 #     gui.show()

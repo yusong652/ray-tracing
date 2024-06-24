@@ -7,9 +7,9 @@ vec = ti.math.vec3
 @ti.data_oriented
 class LightComputer(object):
     def __init__(self):
-        self.intensity_amb = 0.36  # ambient light
-        self.intensity_dir = 0.4  # directional light
-        self.intensity_point = 0.4  # point light
+        self.intensity_amb = 0.42  # ambient light
+        self.intensity_dir = 0.36  # directional light
+        self.intensity_point = 0.38  # point light
         self.light_dir = vec(-1.0, 0.5, 0.5).normalized()  # point to light source
         self.pos_light = vec(-2.0, 3.0, 2.0)  # point light
 

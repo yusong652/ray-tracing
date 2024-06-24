@@ -17,6 +17,7 @@ class Sphere(object):
         self.pos = None
         self.color = None
         self.specular = None
+        self.reflective = None
         self.load_file()
         self.get_rad_range()
         self.set_rad_colormap()
@@ -43,13 +44,14 @@ class Sphere(object):
 
     def load_file(self):
         try:
-            file_name = 'ball_info_501.csv'
+            file_name = 'ball_info_502.csv'
             df = pd.read_csv(file_name)
             self.number = df.shape[0]
             self.rad = ti.field(dtype=flt_default, shape=(self.number,))
             self.pos = ti.field(dtype=flt_default, shape=(self.number, 3))
             self.color = ti.field(dtype=flt_default, shape=(self.number, 3))
             self.specular = ti.field(dtype=flt_default, shape=(self.number,))
+            self.reflective = ti.field(dtype=flt_default, shape=(self.number,))
             radii = df['rad'].to_numpy()
             pos_x = df['pos_x'].to_numpy()
             pos_y = df['pos_y'].to_numpy()
@@ -61,6 +63,7 @@ class Sphere(object):
                 self.pos[i, 1] = pos_y[i]
                 self.pos[i, 2] = pos_z[i]
                 self.specular[i] = 64
+                self.reflective[i] = 0.5
 
         except FileNotFoundError:
             self.default_init()
@@ -71,16 +74,27 @@ class Sphere(object):
         self.pos = ti.field(dtype=flt_default, shape=(self.number, 3))
         self.color = ti.field(dtype=flt_default, shape=(self.number, 3))
         self.specular = ti.field(dtype=flt_default, shape=(self.number,))
-        self.rad[0] = 0.3
-        self.pos[0, 0] = 0.7
+        self.reflective = ti.field(dtype=flt_default, shape=(self.number,))
+        self.rad[0] = 0.28
+        self.pos[0, 0] = 1.5
         self.pos[0, 1] = -0.3
-        self.pos[0, 2] = -0.4
+        self.pos[0, 2] = -0.3
         self.specular[0] = 16.0
+        self.reflective[0] = 0.4
         self.rad[1] = 0.26
-        self.pos[1, 0] = 0.7
+        self.pos[1, 0] = 1.5
         self.pos[1, 1] = -0.3
-        self.pos[1, 2] = 0.4
+        self.pos[1, 2] = 0.3
         self.specular[1] = 64
+        self.reflective[1] = 0.4
+
+    @ti.func
+    def get_pos(self, i: ti.i32):
+        return vec(self.pos[i, 0], self.pos[i, 1], self.pos[i, 2])
+
+    @ti.func
+    def get_color(self, i: ti.i32):
+        return vec(self.color[i, 0], self.color[i, 1], self.color[i, 2])
 
     def get_rad_range(self):
         rad_max = self.rad[0]

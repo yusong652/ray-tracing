@@ -16,12 +16,16 @@ res = mat_1 @ mat_2
 res_2 = vec_1 @ mat_2
 # print(res)
 # print(res_2)
-
+#
 # @ti.kernel
 # def test():
 #     for i, j in array1:
-#         print(i, j)
-# test()
+#         print(ti_func(vec_1, vec_2))
 #
+# @ti.func
+# def ti_func(vec1: vec, vec2: vec) -> vec:
+#     return vec1 + vec2
+
+# test()
 
 print(ti.math.max(vec_1, vec_2))
