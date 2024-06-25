@@ -44,7 +44,7 @@ class Sphere(object):
 
     def load_file(self):
         try:
-            file_name = 'ball_info_502.csv'
+            file_name = 'ball_info_501.csv'
             df = pd.read_csv(file_name)
             self.number = df.shape[0]
             self.rad = ti.field(dtype=flt_default, shape=(self.number,))
