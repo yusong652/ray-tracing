@@ -51,7 +51,7 @@ class Renderer:
     def get_bg_color(self, vec_d: vec) -> vec:
         y = vec_d[1] / vec_d.norm()
         a = 0.5 * (y + 1.0)
-        color_bg = vec(1, 1, 1) * (1.0 - a) + vec(0.3, 0.4, 1.0) * a
+        color_bg = vec(1, 1, 1) * (1.0 - a) + vec(0.3, 0.4, 0.8) * a
         return color_bg
 
     @ti.func
