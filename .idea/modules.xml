@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
       <module fileurl="file://$PROJECT_DIR$/.idea/proj6_refraction.iml" filepath="$PROJECT_DIR$/.idea/proj6_refraction.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/.idea/proj5_reflect.iml" filepath="$PROJECT_DIR$/.idea/proj5_reflect.iml" />
+>>>>>>> grid-ground
     </modules>
   </component>
 </project>
