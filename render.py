@@ -13,6 +13,7 @@ class Renderer:
     def __init__(self):
         self.camera = Camera()
         self.pixels = ti.field(dtype=flt_default, shape=(self.camera.resolution[0], self.camera.resolution[1]))
+        self.pixels_rendered = ti.field(dtype=ti.i32, shape=(self.camera.resolution[0], self.camera.resolution[1]))
         self.num_pixel_render = ti.field(dtype=ti.i32, shape=(1,))
         self.num_pixel_render[0] = self.camera.resolution[0] * self.camera.resolution[1]
         self.num_pixel_rendered = ti.field(dtype=ti.i32, shape=(1,))
@@ -31,21 +32,34 @@ class Renderer:
         self.light_computer = LightComputer()
 
     @ti.kernel
-    def render(self):
+    def render(self, supersample: ti.i32):
         for i, j in self.pixels:
-            vec_d = vec(self.camera.vec_o_to_vp[i, j, 0],
-                        self.camera.vec_o_to_vp[i, j, 1],
+            if self.pixels_rendered[i, j] == 1:
+                continue
+            isRandomSample = 1
+            if isRandomSample:
+                if ti.random() > 0.1:
+                    continue
+            color_accum = vec(0.0, 0.0, 0.0)
+            for sample in range(supersample):
+                u_offset = ti.random() / self.camera.resolution[0] * 1.0
+                v_offset = ti.random() / self.camera.resolution[1] * 1.0
+                vec_d = vec(self.camera.vec_o_to_vp[i, j, 0] + u_offset,
+                        self.camera.vec_o_to_vp[i, j, 1] + v_offset,
                         self.camera.vec_o_to_vp[i, j, 2])
-            color = clip(self.trace_color(self.camera.origin, vec_d, 1, 2),
-                         0.0, 1.0)
+                color = clip(self.trace_color(self.camera.origin, vec_d, 1, 3),
+                            0.0, 1.0)
+                color_accum += color
+            color_avg = color_accum / supersample
             self.num_pixel_rendered[0] += 1
-            self.canvas[i, j, 0] = color[0]
-            self.canvas[i, j, 1] = color[1]
-            self.canvas[i, j, 2] = color[2]
-            self.canvas_to_gui[j, i, 0] = color[0]
-            self.canvas_to_gui[j, i, 1] = color[1]
-            self.canvas_to_gui[j, i, 2] = color[2]
-            print("{} / {} pixels rendered".format(self.num_pixel_rendered[0], self.num_pixel_render[0]))
+            self.canvas[i, j, 0] = color_avg[0]
+            self.canvas[i, j, 1] = color_avg[1]
+            self.canvas[i, j, 2] = color_avg[2]
+            self.canvas_to_gui[j, i, 0] = color_avg[0]
+            self.canvas_to_gui[j, i, 1] = color_avg[1]
+            self.canvas_to_gui[j, i, 2] = color_avg[2]
+            self.pixels_rendered[i, j] = 1
+            # print("{} / {} pixels rendered".format(self.num_pixel_rendered[0], self.num_pixel_render[0]))
 
     @ti.func
     def get_bg_color(self, vec_d: vec) -> vec:
@@ -70,7 +84,7 @@ class Renderer:
             if t_min < t < t_closest:
                 t_closest = t
                 pos = origin + t * vec_d
-                color_local = self.sphere.get_color(index_particle) * self.light_computer.compute_intensity(
+                color_local = self.sphere.get_color(index_particle, pos) * self.light_computer.compute_intensity(
                     self.sphere, index_particle, pos, self.camera)
                 if ti.static(recursion_depth <= 0):
                     color = color_local
@@ -78,8 +92,9 @@ class Renderer:
                     vec_n = (pos - pos_sphere).normalized()
                     vec_r = self.get_reflect_ray(vec_d, vec_n)
                     r = self.sphere.reflective[index_particle]
+                    t_min = 0.001 # minimum reflection distance 
                     color = color_local * (1.0 - r) + self.trace_color(
-                        pos, vec_r, 1.0e-3, recursion_depth - 1) * r
+                        pos, vec_r, t_min, recursion_depth - 1) * r
         return color
 
     @ti.kernel

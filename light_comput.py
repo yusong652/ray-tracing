@@ -109,7 +109,8 @@ class LightComputer(object):
     def compute_diffuse(self, sphere: ti.template(), index_p: ti.int32, pos: vec) -> flt_default:
         intensity = 0.0
         # vector from the centroid to the point
-        vec_norm = pos - vec(sphere.pos[index_p, 0], sphere.pos[index_p, 1], sphere.pos[index_p, 2])
+        pos_sphere = sphere.get_pos(index_p)
+        vec_norm = pos - pos_sphere
         vec_norm = vec_norm.normalized()
         # inner product of directional light (pointing to source) and radius vector
         prod_dir = vec_norm.dot(self.light_dir)
