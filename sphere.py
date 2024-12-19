@@ -43,26 +43,39 @@ class Sphere(object):
 
     def load_file(self):
         try:
-            file_name = 'ball_info_501.csv'
+            file_name = 'ball_info_0.csv'
             df = pd.read_csv(file_name)
-            self.number = df.shape[0]
+            self.number = df.shape[0] - 50000 + 1
             self.rad = ti.field(dtype=flt_default, shape=(self.number,))
             self.pos = ti.field(dtype=flt_default, shape=(self.number, 3))
             self.color = ti.field(dtype=flt_default, shape=(self.number, 3))
+            self.texture = ti.field(dtype=ti.i32, shape=(self.number))
             self.specular = ti.field(dtype=flt_default, shape=(self.number,))
-            self.reflective = ti.field(dtype=flt_default, shape=(self.number,))
+            self.reflective = ti.field(dtype=flt_default, shape=(self.number))
+            self.refractive = ti.field(dtype=flt_default, shape=(self.number))
+            self.refraction_index = ti.field(dtype=flt_default, shape=(self.number))
             radii = df['rad'].to_numpy()
             pos_x = df['pos_x'].to_numpy()
             pos_y = df['pos_y'].to_numpy()
             pos_z = df['pos_z'].to_numpy()
             # specular = df['specular'].to_numpy()
-            for i in range(radii.shape[0]):
+            for i in range(self.number - 1):
                 self.rad[i] = radii[i]
                 self.pos[i, 0] = pos_x[i]
                 self.pos[i, 1] = pos_y[i]
                 self.pos[i, 2] = pos_z[i]
                 self.specular[i] = 64
-                self.reflective[i] = 0.5
+                self.reflective[i] = 0.4
+                self.refractive[i] = 0.1
+                self.refraction_index[i] = 1.5
+            self.rad[self.number - 1] = 1024*6
+            self.pos[self.number - 1, 0] = 1.5
+            self.pos[self.number - 1, 1] = -1024*6 - 2.2
+            self.pos[self.number - 1, 2] = 0.3
+            self.specular[self.number - 1] = 512
+            self.reflective[self.number - 1] = 0
+            self.refractive[self.number - 1] = 0.0
+            self.texture[self.number - 1] = 1
 
         except FileNotFoundError:
             self.default_init()
@@ -74,25 +87,32 @@ class Sphere(object):
         self.color = ti.field(dtype=flt_default, shape=(self.number, 3))
         self.specular = ti.field(dtype=flt_default, shape=(self.number,))
         self.reflective = ti.field(dtype=flt_default, shape=(self.number,))
+        self.refractive = ti.field(dtype=flt_default, shape=(self.number))
+        self.refraction_index = ti.field(dtype=flt_default, shape=(self.number))
         self.texture = ti.field(dtype=ti.i32, shape=(self.number))
         self.rad[0] = 0.28
         self.pos[0, 0] = 1.5
         self.pos[0, 1] = -0.3
         self.pos[0, 2] = -0.3
         self.specular[0] = 16.0
-        self.reflective[0] = 0.28
+        self.reflective[0] = 0.4
+        self.refractive[0] = 0.3
+        self.refraction_index[0] = 1.5
         self.rad[1] = 0.26
         self.pos[1, 0] = 1.5
         self.pos[1, 1] = -0.3
         self.pos[1, 2] = 0.3
         self.specular[1] = 64
-        self.reflective[1] = 0.5
+        self.reflective[1] = 0.1
+        self.refractive[1] = 0.8
+        self.refraction_index[1] = 1.5
         self.rad[2] = 1024*6
         self.pos[2, 0] = 1.5
         self.pos[2, 1] = -1024*6 - 2.2
         self.pos[2, 2] = 0.3
         self.specular[2] = 512
-        self.reflective[2] = 0.36
+        self.reflective[2] = 0.4
+        self.refractive[2] = 0.0
         self.texture[2] = 1
 
     @ti.func
@@ -115,17 +135,16 @@ class Sphere(object):
     def get_rad_range(self):
         rad_max = self.rad[0]
         rad_min = self.rad[0]
-        for i in range(self.number):
+        for i in range(self.number-1):
             if self.rad[i] >= rad_max:
                 rad_max = self.rad[i]
             if self.rad[i] <= rad_min:
                 rad_min = self.rad[i]
-        self.rad_max = 0.28
-        self.rad_min = 0.2
+        self.rad_max = rad_max
+        self.rad_min = rad_min
 
     def set_rad_colormap(self):
-        for i in range(self.number):
+        for i in range(self.number-1):
             scalar = ti.min((self.rad[i] - self.rad_min) / (self.rad_max * 1.02 - self.rad_min * 0.98), 1)
             color = scalar_to_rgb(scalar)
             self.set_color(i, color)
-        self.set_color(2, vec(0, 0.9, 0.65))
