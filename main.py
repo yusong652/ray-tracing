@@ -8,12 +8,12 @@ from format import flt_default
 
 
 def main():
-    ti.init(arch=ti.gpu, default_fp=flt_default, debug=True)
+    ti.init(arch=ti.cpu, device_memory_fraction=1.0, default_fp=flt_default, debug=True)
     renderer = Renderer()
     resolution = (renderer.camera.resolution[1], renderer.camera.resolution[0])
     window = ti.ui.Window("Ball in space", resolution)
     canvas = window.get_canvas()
-    supersample = 128
+    supersample = 64
     while window.running:
         renderer.render(supersample)
         canvas.set_image(renderer.canvas_to_gui)

@@ -42,8 +42,8 @@ class Renderer:
                     continue
             color_accum = vec(0.0, 0.0, 0.0)
             for sample in range(supersample):
-                u_offset = ti.random() / self.camera.resolution[0] * 1.0
-                v_offset = ti.random() / self.camera.resolution[1] * 1.0
+                u_offset = ti.random() / self.camera.resolution[0] * 2.0
+                v_offset = ti.random() / self.camera.resolution[1] * 2.0
                 vec_d = vec(self.camera.vec_o_to_vp[i, j, 0] + u_offset,
                         self.camera.vec_o_to_vp[i, j, 1] + v_offset,
                         self.camera.vec_o_to_vp[i, j, 2])

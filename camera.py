@@ -10,8 +10,8 @@ class Camera(object):
         self.origin = vec(-1.35, -0.4, 0.0)
         self.distance = 1.0
         self.resolution = ti.field(dtype=ti.i32, shape=(2,))
-        self.resolution[0] = 480
-        self.resolution[1] = 720
+        self.resolution[0] = 2160
+        self.resolution[1] = 3840
         self.height = 0.5
         self.width = self.height * self.resolution[1]/self.resolution[0]
         self.yaw = ti.math.pi * 0.0
